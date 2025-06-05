@@ -16,7 +16,7 @@
        (lambda (return)
          (match-variable value
            (pattern (when condition (return (let () body ...))))
-           (else))
+           (else '()))
          (match-variable value clause ...))))
     ((match-variable value ((? predicate) body ...) clause ...)
      (if (predicate value) (let () body ...) (match value clause ...)))
@@ -24,7 +24,7 @@
      (call/cc
        (lambda (return)
          (when (predicate value)
-           (match value (pattern (return (let () body ...))) (else)))
+           (match value (pattern (return (let () body ...))) (else '())))
          (match-variable value clause ...))))
     ((match-variable value ((map function pattern) body ...) clause ...)
      (let ((mapped (function value)))
@@ -44,8 +44,8 @@
            (pattern
              (match-variable value
                ((and pattern* ...) (return (let () body ...)))
-               (else)))
-           (else))
+               (else '())))
+           (else '()))
          (match-variable value clause ...))))
     ((match-variable value ((and) body ...) clause ...) (let () body ...))
     ((match-variable value ((or pattern ...) . body) clause ...)
@@ -66,8 +66,8 @@
              (pattern
                (match-variable (cdr value)
                  (pattern* (return (let () body ...)))
-                 (else)))
-             (else)))
+                 (else '())))
+             (else '())))
          (match-variable value clause ...))))
     ((match-variable value (#(pattern ...) body ...) clause ...)
      (match-variable value
