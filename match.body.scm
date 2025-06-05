@@ -69,9 +69,9 @@
                  (else)))
              (else)))
          (match-variable value clause ...))))
-    ((match-variable value (#(pattern . pattern*) body ...) clause ...)
+    ((match-variable value (#(pattern ...) body ...) clause ...)
      (match-variable value
-       ((?map vector? vector->list (pattern . pattern*)) body ...)
+       ((?map vector? vector->list (pattern ...)) body ...)
        clause ...))
     ((match-variable value (else body ...) clause ...) (let () body ...))
     ((match-variable value (_ body ...) clause ...) (let () body ...))
@@ -99,10 +99,8 @@
 ;;; `(<pattern-a> . <pattern-b>)` - only matches pairs, then matches `car` and
 ;;;   `cdr` recursively;
 ;;; `#(<pattern> ...)` - only matches vectors, then matches each element
-;;;   recursively. Pair syntax can be used inside if you are dealing with
-;;;   variable length vectors, though unfortunately that only allows you to look
-;;;   at the vector from the front. If you want to look at it from the back, you
-;;;   would have to use `if` and/or `?` patterns;
+;;;   recursively. Unfortunately, due to the absence of ellipses, it cannot be
+;;;   used for variable-length vectors;
 ;;; `(if <condition>)` - matches only if `<condition>` is `#t`
 ;;; `(if <pattern> <condition>)` - matches against <pattern>, then also checks
 ;;;   if `<condition>` is `#t`;
