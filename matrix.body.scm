@@ -10,24 +10,16 @@
 (define +
   (case-lambda
     (() 0)
-    ((x . xs)
-     (if (number? x)
-       (apply scheme+ x xs)
-       (apply map + x xs)))))
+    ((x . xs) (if (number? x) (apply scheme+ x xs) (apply map + x xs)))))
 
 ;;; Universal `-` for numbers, vectors, and matrices
 
-(define (- x . xs)
-  (if (number? x)
-    (apply scheme- x xs)
-    (apply map - x xs)))
+(define (- x . xs) (if (number? x) (apply scheme- x xs) (apply map - x xs)))
 
 ;;; Universal `-` for numbers, vectors, and matrices
 
 (define (scale k x)
-  (if (number? x)
-    (scheme* k x)
-    (map (lambda (y) (scale k y)) x)))
+  (if (number? x) (scheme* k x) (map (lambda (y) (scale k y)) x)))
 
 ;;; Universal `*` for numbers, vectors, and matrices. Uses dot products for
 ;;; vectors
@@ -35,23 +27,17 @@
 (define *
   (case-lambda
     (() 1)
-    ((m . ms)
-     (match (cons m (apply * ms))
-       ((or (() . m) (m . ())) m)
-       ((and (m . n) (((_ . _) . _) . ((_ . _) . _)))
-        (map
-          (lambda (row)
-            (apply map (lambda col (* row col)) n))
-          m))
-       ((and (m . n) (((_ . _) . _) . (_ . _)))
-        (map (lambda (row) (* row n)) m))
-       ((and (m . n) ((_ . _) . ((_ . _) . _)))
-        (apply map (lambda col (* m col)) n))
-       ((and (m . n) ((_ . _) . (_ . _)))
-        (apply scheme+ (map scheme* m n)))
-       ((or (k . (and m (_ . _))) ((and m (_ . _)) . k))
-        (scale k m))
-       ((m . n) (scheme* m n))))))
+    ((m) m)
+    ((m n) (match (cons m n)
+             ((or (() . m) (m . ())) m)
+             ((((_ . _) . _) . ((_ . _) . _))
+              (map (lambda (row) (apply map (lambda col (* row col)) n)) m))
+             ((((_ . _) . _) . (_ . _)) (map (lambda (row) (* row n)) m))
+             (((_ . _) . ((_ . _) . _)) (apply map (lambda col (* m col)) n))
+             (((_ . _) . (_ . _)) (apply scheme+ (map scheme* m n)))
+             ((or (k . (and m (_ . _))) ((and m (_ . _)) . k)) (scale k m))
+             (else (scheme* m n))))
+    (ms (reduce-left * ms))))
 
 ;;; Universal `/` for numbers, vectors, and matrices. Left-associative, where
 ;;; `(/ A B)` is `(* (/ B) A)`, so that it can be used to solve matrix equations
@@ -60,24 +46,18 @@
 
 (define /
   (case-lambda
-    ((m)
-     (if (number? m)
-       (scheme/ m)
-       (let ((k (scheme/ (abs m)))
-             (rows-range (iota (length m))))
-         (map
-           (lambda (j)
-             (map
-               (lambda (i)
-                 (scheme*
-                   k
-                   (if (even? (scheme+ i j)) 1 -1)
-                   (abs
-                     (map
-                       (lambda (row) (remove-index j row))
-                       (remove-index i m)))))
-               rows-range))
-           (iota (length (car m)))))))
+    ((m) (if (number? m)
+           (scheme/ m)
+           (let ((k (scheme/ (abs m))) (rows-range (iota (length m))))
+             (map (lambda (j)
+                    (map (lambda (i)
+                           (scheme*
+                             k
+                             (if (even? (scheme+ i j)) 1 -1)
+                             (abs (map (lambda (row) (remove-index j row))
+                                       (remove-index i m)))))
+                         rows-range))
+                  (iota (length (car m)))))))
     ((m n) (* (/ n) m))
     (ms (reduce-left / ms))))
 
@@ -87,17 +67,12 @@
 (define (abs m)
   (match m
     (() 1)
-    (((_ . _) . _)
-     (apply
-       scheme+
-       (map
-         (lambda (i row)
-           (scheme*
-             (if (even? i) 1 -1)
-             (car row)
-             (abs (map cdr (remove-index i m)))))
-         (iota (length m))
-         m)))
+    (((_ . _) . _) (apply scheme+
+                          (map (lambda (i row)
+                                 (scheme* (if (even? i) 1 -1)
+                                          (car row)
+                                          (abs (map cdr (remove-index i m)))))
+                               (iota (length m)) m)))
     ((_ . _) (sqrt (* m m)))
     (else (scheme-abs m))))
 

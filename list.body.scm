@@ -14,32 +14,27 @@
     ;; Returns numbers in range [0; n)
     ((n) (iota 0 n))
     ;; Returns numbers in range [a; b)
-    ((a b) (do ((r '() (cons i r)) (i (- b 1) (- i 1))) ((< i a) r)))
-    ;; Returns numbers in range [a; b), with custom step `s`. Works with
-    ;; non-integers too
-    ((a b s) (do ((r '() (cons i r)) (i a (+ i s))) ((>= i b) (reverse r))))))
+    ((a b) (iota a b 1))
+    ;; Returns numbers in range [a; b), with custom step `s`
+    ((a b s) (if (< a b) (cons a (iota (+ a s) b s)) '()))))
 
 ;;; Your standard `filter`
 
 (define (filter p? xs)
   (match xs
-    ((if (x . xs) (p? x)) (cons x (filter p? xs)))
+    (((? p? x) . xs) (cons x (filter p? xs)))
     ((x . xs) (filter p? xs))
     (else xs)))
 
 ;;; Left-associative reduction
 
 (define (reduce-left f xs)
-  (match xs
-    ((x) x)
-    ((x y . xs) (reduce-left f (cons (f x y) xs)))))
+  (match xs ((x) x) ((x y . xs) (reduce-left f (cons (f x y) xs)))))
 
 ;;; Right-associative reduction
 
 (define (reduce-right f xs)
-  (match xs
-    ((x) x)
-    ((x . xs) (f x (reduce-right f xs)))))
+  (match xs ((x) x) ((x . xs) (f x (reduce-right f xs)))))
 
 ;;; Constructs a list with `i`th element removed
 
@@ -74,9 +69,7 @@
 ;;; removed, or all of them removed if `xs` has less that `n` elements
 
 (define (drop n xs)
-  (match xs
-    ((if (_ . xs) (positive? n)) (drop (- n 1) xs))
-    (else xs)))
+  (match xs ((if (_ . xs) (positive? n)) (drop (- n 1) xs)) (else xs)))
 
 ;;; Constructs sliding window for a given list, with window of size `n`
 
