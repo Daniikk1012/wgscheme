@@ -12,5 +12,6 @@
     find-opt
     find
     take
-    drop)
+    drop
+    windows)
   (include "list.body.scm"))
