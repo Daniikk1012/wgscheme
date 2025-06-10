@@ -2,16 +2,6 @@
 
 (define-library (wgscheme list)
   (import (scheme base) (scheme case-lambda) (wgscheme match))
-  (export
-    repeat
-    iota
-    filter
-    reduce-left
-    reduce-right
-    remove-index
-    find-opt
-    find
-    take
-    drop
-    windows)
+  (export repeat iota filter reduce-left reduce-right remove-index find-opt find
+          take drop windows)
   (include "list.body.scm"))

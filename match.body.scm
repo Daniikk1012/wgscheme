@@ -6,7 +6,7 @@
 ;;; multiple times
 
 (define-syntax match-variable
-  (syntax-rules (if ? map ?map and or not unquote else _)
+  (syntax-rules (if ? map ?map and or not quote unquote else _)
     ((match-variable value (() body ...) clause ...)
      (if (null? value) (let () body ...) (match-variable value clause ...)))
     ((match-variable value ((if condition) body ...) clause ...)
@@ -48,6 +48,10 @@
      (match-variable value
        (pattern (match-variable value clause ...))
        (else body ...)))
+    ((match-variable value ('pattern body ...) clause ...)
+     (if (equal? value 'pattern)
+       (let () body ...)
+       (match-variable value clause ...)))
     ((match-variable value (,pattern body ...) clause ...)
      (if (equal? value pattern)
        (let () body ...)
@@ -88,6 +92,7 @@
 ;;; `<name>` - matches anything and binds its value to `<name>`;
 ;;; `<constant>` - matches only if the value is `equal?` to `<constant>`;
 ;;; `,<expr>` - matches only if the value is `equal?` to result of `<expr>`;
+;;; `,<literal>` - matches only if the value is `equal?` to the literal data;
 ;;; `(<pattern-a> . <pattern-b>)` - only matches pairs, then matches `car` and
 ;;;   `cdr` recursively;
 ;;; `#(<pattern> ...)` - only matches vectors, then matches each element
